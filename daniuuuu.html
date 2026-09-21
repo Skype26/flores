@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Girasoles para ti · 21 de septiembre</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Nunito:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            --card: #fffaf0;
+            --card-ink: #4a2a0e;
+            --accent: #f9b807;
+            --accent-ink: #3a1f05;
+            --line: rgba(74, 42, 14, .2);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --card: #2a1d3a;
+                --card-ink: #fff1cf;
+                --line: rgba(255, 241, 207, .22);
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --card: #2a1d3a;
+            --card-ink: #fff1cf;
+            --line: rgba(255, 241, 207, .22);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit;
+        }
+
+        html {
+            height: 100%;
+            scroll-padding-top: env(safe-area-inset-top, 0px);
+        }
+
+        body {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+            color: #fff4d6;
+            font-family: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+            background: radial-gradient(ellipse at 50% 50%, #3a1d4d 0%, #1b1038 45%, #0a0620 100%);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        canvas#c {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            touch-action: none;
+            cursor: grab;
+        }
+
+        canvas#c:active {
+            cursor: grabbing;
+        }
+
+        header {
+            position: fixed;
+            z-index: 5;
+            left: 0;
+            right: 0;
+            top: 0;
+            text-align: center;
+            pointer-events: none;
+            padding: calc(env(safe-area-inset-top, 0px) + 4vh) 20px 0;
+            text-shadow: 0 2px 14px rgba(10, 6, 32, .85);
+        }
+
+        h1 {
+            font-family: "Caprasimo", Georgia, "Times New Roman", serif;
+            font-weight: 400;
+            line-height: 1.02;
+            margin: 0;
+            font-size: clamp(2.2rem, 8.5vw, 4.6rem);
+            color: #ffd23f;
+        }
+
+        h1 .fecha {
+            display: block;
+            font-size: .55em;
+            color: #fff4d6;
+            margin-top: .2em;
+        }
+
+        .sub {
+            margin: .7rem auto 0;
+            max-width: 36ch;
+            font-size: clamp(.95rem, 3.4vw, 1.15rem);
+            font-weight: 600;
+        }
+
+        footer {
+            position: fixed;
+            z-index: 5;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            text-align: center;
+            padding: 0 20px calc(env(safe-area-inset-bottom, 0px) + 18px);
+        }
+
+        .actions {
+            display: flex;
+            gap: .7rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hint {
+            margin: .8rem 0 0;
+            font-size: .85rem;
+            opacity: .8;
+            text-shadow: 0 1px 6px rgba(10, 6, 32, .9);
+        }
+
+        button {
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 999px;
+            min-height: 44px;
+            padding: .7rem 1.4rem;
+            border: 2px solid var(--accent);
+            background: var(--accent);
+            color: var(--accent-ink);
+        }
+
+        button.ghost {
+            background: rgba(10, 6, 32, .35);
+            color: #fff4d6;
+            border-color: #fff4d6;
+        }
+
+        .card button.ghost {
+            background: transparent;
+            color: var(--card-ink);
+            border-color: var(--card-ink);
+        }
+
+        button:focus-visible,
+        input:focus-visible {
+            outline: 3px solid #fff4d6;
+            outline-offset: 3px;
+        }
+
+        .card button:focus-visible,
+        .card input:focus-visible {
+            outline-color: var(--card-ink);
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 20;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(10, 6, 32, .55);
+        }
+
+        .overlay.open {
+            display: flex;
+        }
+
+        .card {
+            background: var(--card);
+            color: var(--card-ink);
+            width: min(520px, 100%);
+            max-height: 88vh;
+            overflow: auto;
+            border-radius: 24px;
+            padding: 28px 26px;
+            border: 2px solid var(--line);
+            animation: pop .45s cubic-bezier(.2, .9, .3, 1.2) both;
+            text-shadow: none;
+        }
+
+        @keyframes pop {
+            from {
+                transform: scale(.85) translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: none;
+                opacity: 1;
+            }
+        }
+
+        .card h2 {
+            font-family: "Caprasimo", Georgia, serif;
+            font-weight: 400;
+            font-size: 1.9rem;
+            margin: 0 0 .6rem;
+        }
+
+        .card p {
+            line-height: 1.6;
+            margin: 0 0 .9rem;
+            font-size: 1.05rem;
+            max-width: 60ch;
+        }
+
+        .card .firma {
+            font-weight: 700;
+            margin-top: 1.2rem;
+        }
+
+        .card .row {
+            display: flex;
+            gap: .6rem;
+            flex-wrap: wrap;
+            margin-top: 1.2rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            margin: .9rem 0 .3rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            font: inherit;
+            padding: .7rem .9rem;
+            border-radius: 12px;
+            border: 2px solid var(--line);
+            background: transparent;
+            color: inherit;
+            min-height: 44px;
+        }
+
+        .out {
+            margin-top: 1rem;
+            font-size: .9rem;
+            word-break: break-all;
+            padding: .7rem .9rem;
+            border-radius: 12px;
+            border: 2px dashed var(--line);
+        }
+
+        .status {
+            min-height: 1.4em;
+            font-weight: 700;
+
+            .nogl {
+                position: fixed;
+                inset: 0;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 30px;
+                z-index: 3;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .card {
+                    animation: none;
+                }
+            }
+
+            /* ── Botón flotante de música ── */
+            #musicBtn {
+                position: fixed;
+                z-index: 15;
+                top: calc(env(safe-area-inset-top, 0px) + 16px);
+                right: 16px;
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                border: 2px solid rgba(255, 210, 63, .6);
+                background: rgba(10, 6, 32, .55);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                color: #ffd23f;
+                font-size: 1.4rem;
+                cursor: pointer;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: transform .25s ease, border-color .3s, background .3s;
+                box-shadow: 0 2px 12px rgba(0, 0, 0, .4);
+            }
+
+            #musicBtn:hover {
+                transform: scale(1.1);
+                border-color: #ffd23f;
+            }
+
+            #musicBtn.playing {
+                border-color: #ffd23f;
+                background: rgba(249, 184, 7, .25);
+            }
+
+            #musicBtn.playing .note {
+                animation: bounce-note .6s ease infinite alternate;
+            }
+
+            @keyframes bounce-note {
+                0% {
+                    transform: translateY(0) rotate(-8deg);
+                }
+
+                100% {
+                    transform: translateY(-3px) rotate(8deg);
+                }
+            }
+
+            #musicBtn .bars {
+                display: flex;
+                align-items: flex-end;
+                gap: 2px;
+                height: 18px;
+            }
+
+            #musicBtn .bars span {
+                display: block;
+                width: 3px;
+                background: #ffd23f;
+                border-radius: 2px;
+                transition: height .3s ease;
+            }
+
+            #musicBtn.playing .bars span {
+                animation: eq-bar .5s ease infinite alternate;
+            }
+
+            #musicBtn.playing .bars span:nth-child(1) {
+                animation-delay: 0s;
+            }
+
+            #musicBtn.playing .bars span:nth-child(2) {
+                animation-delay: .15s;
+            }
+
+            #musicBtn.playing .bars span:nth-child(3) {
+                animation-delay: .3s;
+            }
+
+            #musicBtn.playing .bars span:nth-child(4) {
+                animation-delay: .1s;
+            }
+
+            @keyframes eq-bar {
+                0% {
+                    height: 4px;
+                }
+
+                100% {
+                    height: 16px;
+                }
+            }
+
+            #musicBtn:not(.playing) .bars span:nth-child(1) {
+                height: 8px;
+            }
+
+            #musicBtn:not(.playing) .bars span:nth-child(2) {
+                height: 12px;
+            }
+
+            #musicBtn:not(.playing) .bars span:nth-child(3) {
+                height: 6px;
+            }
+
+            #musicBtn:not(.playing) .bars span:nth-child(4) {
+                height: 10px;
+            }
+
+            #ytContainer {
+                position: fixed;
+                top: -9999px;
+                left: -9999px;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                pointer-events: none;
+            }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="c"
+        aria-label="Sol en el centro con ramos de girasoles y flores amarillas girando a su alrededor. Arrastra para rotar."></canvas>
+    <p class="nogl" id="nogl"></p>
+
+    <header>
+        <h1>Feliz primer<span class="fecha">21 de septiembre juntos</span></h1>
+        <p class="sub" id="sub">Daniuuuup, eres el sol de mi día</p>
+    </header>
+
+    <footer>
+        <div class="actions">
+            <button id="openMsg" type="button">Abrir mi mensaje</button>
+            <button id="openMake" hidden></button>
+        </div>
+        <p class="hint">Arrastra para girar · pellizca o usa la rueda para acercar</p>
+    </footer>
+
+
+    <div class="overlay" id="ovMsg" role="dialog" aria-modal="true" aria-labelledby="msgTitle">
+        <div class="card">
+            <h2 id="msgTitle">Para ti</h2>
+            <p>Hoy es nuestro primer 21 de septiembre juntos. Empieza la primavera, y contigo todo florece un poquito
+                más.</p>
+            <p>Así como los planetas giran alrededor del sol, hoy quise que las flores y todas mis palabras giraran
+                alrededor de ti. Eres mi persona favorita y mi mundo entero.</p>
+            <p>Gracias por hacerme tan feliz. Ojalá tengamos muchísimos 21 de septiembre más, uno más bonito que el
+                otro. Te quiero.</p>
+            <p class="firma" id="firma">Con cariño tu bebito que te quiere un montón</p>
+            <div class="row"><button type="button" id="closeMsg">Cerrar</button></div>
+        </div>
+    </div>
+
+    <div class="overlay" id="ovMake" role="dialog" aria-modal="true" aria-labelledby="makeTitle">
+        <div class="card">
+            <h2 id="makeTitle">Crea tu enlace</h2>
+            <p>Escribe los nombres y comparte la página ya personalizada.</p>
+            <label for="inPara">Para quién es</label>
+            <input type="text" id="inPara" maxlength="30" placeholder="Ej: Camila" autocomplete="off">
+            <label for="inDe">De parte de</label>
+            <input type="text" id="inDe" maxlength="30" placeholder="Ej: Alex" autocomplete="off">
+            <div class="out" id="outLink" aria-live="polite"></div>
+            <p class="status" id="status" role="status"></p>
+            <div class="row">
+                <button type="button" id="copy">Copiar enlace</button>
+                <button type="button" class="ghost" id="wa">Enviar por WhatsApp</button>
+                <button type="button" class="ghost" id="closeMake">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        (function () {
+            /* ---------- personalización ---------- */
+            function clean(s) { return (s || "").replace(/[<>]/g, "").trim().slice(0, 30); }
+            var params = new URLSearchParams(location.search);
+            var para = clean(params.get("para")), de = clean(params.get("de"));
+            var nombre = para || "Daniuuuup";
+            document.getElementById("msgTitle").textContent = "Para " + nombre;
+            document.getElementById("sub").textContent = nombre + ", eres el sol de mi día";
+            if (de) document.getElementById("firma").textContent = "Con cariño, " + de;
+
+            /* ---------- diálogos ---------- */
+            var ovMsg = document.getElementById("ovMsg"), ovMake = document.getElementById("ovMake");
+            function open(o) { o.classList.add("open"); var b = o.querySelector("button, input"); if (b) b.focus(); }
+            function close(o) { o.classList.remove("open"); }
+            document.getElementById("openMsg").onclick = function () { open(ovMsg); };
+            document.getElementById("closeMsg").onclick = function () { close(ovMsg); };
+            document.getElementById("openMake").onclick = function () { open(ovMake); update(); };
+            document.getElementById("closeMake").onclick = function () { close(ovMake); };
+            [ovMsg, ovMake].forEach(function (o) { o.addEventListener("pointerdown", function (e) { if (e.target === o) close(o); }); });
+            document.addEventListener("keydown", function (e) { if (e.key === "Escape") { close(ovMsg); close(ovMake); } });
+
+            var inPara = document.getElementById("inPara"), inDe = document.getElementById("inDe");
+            var out = document.getElementById("outLink"), status = document.getElementById("status");
+            function link() {
+                var u = new URL(location.href);
+                var q = new URLSearchParams();
+                if (clean(inPara.value)) q.set("para", clean(inPara.value));
+                if (clean(inDe.value)) q.set("de", clean(inDe.value));
+                var s = q.toString();
+                return u.origin + u.pathname + (s ? "?" + s : "");
+            }
+            function update() { out.textContent = link(); status.textContent = ""; }
+            inPara.addEventListener("input", update); inDe.addEventListener("input", update);
+            document.getElementById("copy").onclick = function () {
+                try {
+                    navigator.clipboard.writeText(link()).then(function () { status.textContent = "Enlace copiado"; },
+                        function () { status.textContent = "No se pudo copiar. Selecciónalo y cópialo a mano."; });
+                } catch (e) { status.textContent = "No se pudo copiar. Selecciónalo y cópialo a mano."; }
+            };
+            document.getElementById("wa").onclick = function () {
+                window.open("https://wa.me/?text=" + encodeURIComponent("Feliz 21 de septiembre. Te dejé un sol y flores: " + link()), "_blank", "noopener");
+            };
+
+            /* ---------- 3D ---------- */
+            var canvas = document.getElementById("c");
+            var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            var renderer;
+            try {
+                if (!window.THREE) throw new Error("no three");
+                renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            } catch (e) {
+                document.getElementById("nogl").style.display = "flex";
+                return;
+            }
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            renderer.setClearColor(0x000000, 0);
+
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(50, 1, 0.1, 400);
+
+            /* texturas por canvas */
+            function glowTex() {
+                var c = document.createElement("canvas"); c.width = c.height = 128;
+                var g = c.getContext("2d"), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+                gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(.35, "rgba(255,255,255,.35)"); gr.addColorStop(1, "rgba(255,255,255,0)");
+                g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+                return new THREE.CanvasTexture(c);
+            }
+            function sunTex() {
+                var c = document.createElement("canvas"); c.width = 512; c.height = 256;
+                var g = c.getContext("2d"), gr = g.createLinearGradient(0, 0, 0, 256);
+                gr.addColorStop(0, "#ffd84d"); gr.addColorStop(.5, "#ffb020"); gr.addColorStop(1, "#ff8a1a");
+                g.fillStyle = gr; g.fillRect(0, 0, 512, 256);
+                for (var i = 0; i < 260; i++) {
+                    var x = Math.random() * 512, y = Math.random() * 256, r = 6 + Math.random() * 26;
+                    var rg = g.createRadialGradient(x, y, 0, x, y, r);
+                    var warm = Math.random() < .5;
+                    rg.addColorStop(0, warm ? "rgba(255,244,170,.45)" : "rgba(214,90,10,.35)");
+                    rg.addColorStop(1, "rgba(255,200,60,0)");
+                    g.fillStyle = rg; g.fillRect(x - r, y - r, r * 2, r * 2);
+                }
+                return new THREE.CanvasTexture(c);
+            }
+            var glow = glowTex();
+
+            /* sol */
+            var sun = new THREE.Mesh(new THREE.SphereGeometry(2.3, 48, 48), new THREE.MeshBasicMaterial({ map: sunTex() }));
+            scene.add(sun);
+            function halo(size, color, opacity) {
+                var s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: color, transparent: true, opacity: opacity, blending: THREE.AdditiveBlending, depthWrite: false }));
+                s.scale.set(size, size, 1); scene.add(s); return s;
+            }
+            var h1 = halo(9, 0xffc23a, .95), h2 = halo(20, 0xff8a1f, .4), h3 = halo(34, 0xff6a3d, .16);
+
+            /* luces */
+            scene.add(new THREE.AmbientLight(0xa79bd6, 0.6));
+            scene.add(new THREE.HemisphereLight(0xffe6a8, 0x2a1a55, 0.35));
+            scene.add(new THREE.PointLight(0xfff0c0, 2.1, 0, 1));
+
+            /* estrellas y polen dorado */
+            function points(n, rmin, rmax, size, tintYellow) {
+                var pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
+                for (var i = 0; i < n; i++) {
+                    var r = rmin + Math.random() * (rmax - rmin);
+                    var th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+                    pos[i * 3] = r * Math.sin(ph) * Math.cos(th); pos[i * 3 + 1] = r * Math.cos(ph); pos[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+                    var y = Math.random() < tintYellow;
+                    col[i * 3] = 1; col[i * 3 + 1] = y ? .85 : .95; col[i * 3 + 2] = y ? .45 : 1;
+                }
+                var geo = new THREE.BufferGeometry();
+                geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+                geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+                var p = new THREE.Points(geo, new THREE.PointsMaterial({ size: size, map: glow, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+                scene.add(p); return p;
+            }
+            var stars = points(700, 70, 180, 2.2, 0.25);
+            var pollen = points(140, 6, 26, 0.5, 1);
+
+            /* ---------- flores ---------- */
+            var UP = new THREE.Vector3(0, 1, 0);
+            var petalGeo = new THREE.SphereGeometry(1, 8, 6);
+            var stemGeo = new THREE.CylinderGeometry(0.022, 0.022, 1, 6);
+            var matPetalW = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .6, side: THREE.DoubleSide });
+            var matDisc = new THREE.MeshStandardMaterial({ color: 0x4a2810, roughness: .9 });
+            var matDisc2 = new THREE.MeshStandardMaterial({ color: 0x6b3b17, roughness: .9 });
+            var matDaisyC = new THREE.MeshStandardMaterial({ color: 0xe8830c, roughness: .7 });
+            var matStem = new THREE.MeshStandardMaterial({ color: 0x3f8a3f, roughness: .8 });
+            var matLeaf = new THREE.MeshStandardMaterial({ color: 0x4fa04a, roughness: .8, side: THREE.DoubleSide });
+            var papers = [0xfff1c9, 0xe0aa66, 0xffe0a3, 0xf7d9c4];
+            var dummy = new THREE.Object3D(); dummy.rotation.order = "YXZ";
+            var tmpC = new THREE.Color();
+
+            function petals(n, rings, r, sx, sy, sz, colors, tilt) {
+                var im = new THREE.InstancedMesh(petalGeo, matPetalW, n * rings), k = 0;
+                for (var ring = 0; ring < rings; ring++) {
+                    for (var i = 0; i < n; i++) {
+                        var a = (i / n) * Math.PI * 2 + ring * Math.PI / n;
+                        dummy.position.set(Math.cos(a) * (r - ring * .04), ring * .015, Math.sin(a) * (r - ring * .04));
+                        dummy.rotation.set(-tilt - ring * .05, Math.PI / 2 - a, 0);
+                        dummy.scale.set(sx, sy, sz - ring * .01);
+                        dummy.updateMatrix();
+                        im.setMatrixAt(k, dummy.matrix);
+                        im.setColorAt(k, tmpC.set(colors[ring % colors.length]));
+                        k++;
+                    }
+                }
+                return im;
+            }
+            function sunflower() {
+                var g = new THREE.Group();
+                g.add(petals(14, 2, .34, .075, .012, .17, [0xe89a00, 0xffc400], .16));
+                var d = new THREE.Mesh(new THREE.SphereGeometry(.2, 20, 12), matDisc); d.scale.y = .32; g.add(d);
+                var d2 = new THREE.Mesh(new THREE.SphereGeometry(.1, 14, 8), matDisc2); d2.scale.y = .4; d2.position.y = .02; g.add(d2);
+                return g;
+            }
+            function daisy() {
+                var g = new THREE.Group();
+                g.add(petals(11, 1, .2, .05, .01, .13, [0xffe66d], .1));
+                var c = new THREE.Mesh(new THREE.SphereGeometry(.09, 12, 8), matDaisyC); c.scale.y = .5; g.add(c);
+                return g;
+            }
+            function stem(a, b) {
+                var dir = new THREE.Vector3().subVectors(b, a), len = dir.length();
+                var m = new THREE.Mesh(stemGeo, matStem);
+                m.scale.y = len; m.position.copy(a).addScaledVector(dir, .5);
+                m.quaternion.setFromUnitVectors(UP, dir.normalize());
+                return m;
+            }
+            function bouquet(paperColor, phase) {
+                var b = new THREE.Group();
+                var cone = new THREE.Mesh(new THREE.CylinderGeometry(.6, .15, 1.15, 24, 1, true),
+                    new THREE.MeshStandardMaterial({ color: paperColor, roughness: .85, side: THREE.DoubleSide }));
+                b.add(cone);
+                var rib = new THREE.Mesh(new THREE.TorusGeometry(.36, .03, 8, 24), new THREE.MeshStandardMaterial({ color: 0xc65a00, roughness: .6 }));
+                rib.rotation.x = Math.PI / 2; rib.position.y = -.05; b.add(rib);
+
+                var base = new THREE.Vector3(0, .3, 0), specs = [{ p: [0, 1.55, 0], t: "s", s: 1.15 }], i, a;
+                for (i = 0; i < 5; i++) {
+                    a = (i / 5) * Math.PI * 2 + phase;
+                    specs.push({ p: [Math.cos(a) * .62, 1.3 + (i % 2) * .08, Math.sin(a) * .62], t: i % 2 ? "s" : "d", s: i % 2 ? .8 : .95 });
+                }
+                for (i = 0; i < 3; i++) {
+                    a = (i / 3) * Math.PI * 2 + phase + .6;
+                    specs.push({ p: [Math.cos(a) * .82, 1.0, Math.sin(a) * .82], t: "d", s: .75 });
+                }
+                specs.forEach(function (f) {
+                    var pos = new THREE.Vector3(f.p[0], f.p[1], f.p[2]);
+                    var dir = pos.clone().sub(base).normalize();
+                    var head = f.t === "s" ? sunflower() : daisy();
+                    head.position.copy(pos);
+                    head.quaternion.setFromUnitVectors(UP, dir);
+                    head.scale.setScalar(f.s);
+                    b.add(head);
+                    b.add(stem(base, pos.clone().addScaledVector(dir, -.03)));
+                });
+                for (i = 0; i < 4; i++) {
+                    var pv = new THREE.Object3D(); pv.rotation.y = (i / 4) * Math.PI * 2 + phase + .3;
+                    var leaf = new THREE.Mesh(petalGeo, matLeaf);
+                    leaf.scale.set(.1, .014, .34); leaf.position.set(0, .82, .42); leaf.rotation.x = -.55;
+                    pv.add(leaf); b.add(pv);
+                }
+                b.position.y = -.2;
+                return b;
+            }
+
+            /* órbitas */
+            var orbits = [
+                { r: 6.2, sp: .34, n: 2 }, { r: 8.8, sp: .25, n: 2 },
+                { r: 11.4, sp: .19, n: 2 }, { r: 14, sp: .14, n: 2 }
+            ];
+            var movers = [], idx = 0;
+            orbits.forEach(function (o, oi) {
+                var pts = [];
+                for (var i = 0; i <= 128; i++) { var t = (i / 128) * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(t) * o.r, 0, Math.sin(t) * o.r)); }
+                var ringGroup = new THREE.Group();
+                ringGroup.rotation.set((oi % 2 ? -1 : 1) * .06, 0, (oi % 2 ? 1 : -1) * .05);
+                ringGroup.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),
+                    new THREE.LineBasicMaterial({ color: 0xffd66b, transparent: true, opacity: .16 })));
+                for (var k = 0; k < o.n; k++) {
+                    var pivot = new THREE.Group();
+                    pivot.rotation.y = (k / o.n) * Math.PI * 2 + oi * 1.1;
+                    var holder = new THREE.Group(); holder.position.x = o.r; holder.rotation.z = -.22;
+                    var bq = bouquet(papers[idx % papers.length], idx * .7);
+                    holder.add(bq); pivot.add(holder); ringGroup.add(pivot);
+                    movers.push({ pivot: pivot, holder: holder, bq: bq, sp: o.sp, bob: idx * 1.3, spin: .3 + (idx % 3) * .12 });
+                    idx++;
+                }
+                scene.add(ringGroup);
+            });
+
+            /* ---------- mensajes de amor alrededor de todo ---------- */
+            var loveMsgs = [
+                "Eres mi persona favorita", "Eres mi mundo entero", "Te quiero", "Mi lugar favorito eres tú",
+                "Contigo todo es mejor", "Eres mi sol", "Te quiero muchísimo", "Gracias por existir",
+                "Me haces muy feliz", "Mi girasol favorito", "Contigo siempre", "Eres mi casa",
+                "Te elijo cada día", "Mi razón de sonreír", "Eres lo mejor de mi vida", "Mi todo"
+            ];
+            var loveColors = ["#ffd23f", "#ffb3c7", "#fff4d6"];
+            var loveGroup = new THREE.Group(); scene.add(loveGroup);
+            var loveSprites = [];
+
+            function textSprite(text, color) {
+                var font = '700 90px "Caprasimo", Georgia, serif';
+                var c = document.createElement("canvas"), g = c.getContext("2d");
+                g.font = font;
+                var w = Math.ceil(g.measureText(text).width) + 120;
+                c.width = w; c.height = 190;
+                g = c.getContext("2d");
+                g.font = font; g.textAlign = "center"; g.textBaseline = "middle";
+                g.shadowColor = "rgba(255,120,70,.95)"; g.shadowBlur = 30; g.fillStyle = color;
+                g.fillText(text, w / 2, 95); g.fillText(text, w / 2, 95);
+                var mat = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false, opacity: 0 });
+                var s = new THREE.Sprite(mat), H = 1.9;
+                s.scale.set(H * w / 190, H, 1);
+                return s;
+            }
+            function buildLove() {
+                if (loveSprites.length) return;
+                var born = clock.elapsedTime;
+                loveMsgs.forEach(function (msg, i) {
+                    var s = textSprite(msg + (i % 3 === 0 ? " ♥" : ""), loveColors[i % 3]);
+                    var a = i * 2.39996, r = 17 + (i % 3) * 3.5, y = -7 + ((i * 5) % 7) * 2.3;
+                    s.position.set(Math.cos(a) * r, y, Math.sin(a) * r);
+                    s.userData = { y: y, born: born + i * .25, ph: i * 1.7 };
+                    loveGroup.add(s); loveSprites.push(s);
+                });
+            }
+            var fontsReady = (document.fonts && document.fonts.load)
+                ? Promise.race([document.fonts.load('90px "Caprasimo"'), new Promise(function (r) { setTimeout(r, 2500); })])
+                : Promise.resolve();
+            fontsReady.then(buildLove, buildLove);
+
+            /* ---------- cámara y control ---------- */
+            var yaw = .6, pitch = .38, zoom = 1, baseDist = 30, lastTouch = 0;
+            function fit() {
+                var w = window.innerWidth, h = window.innerHeight;
+                renderer.setSize(w, h, false);
+                camera.aspect = w / h; camera.updateProjectionMatrix();
+                var t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+                baseDist = Math.max(24, 11.5 / (t * camera.aspect));
+            }
+            window.addEventListener("resize", fit); fit();
+
+            var ptrs = new Map();
+            canvas.addEventListener("pointerdown", function (e) {
+                try { canvas.setPointerCapture(e.pointerId); } catch (x) { }
+                ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); lastTouch = performance.now();
+            });
+            canvas.addEventListener("pointermove", function (e) {
+                if (!ptrs.has(e.pointerId)) return;
+                var prev = ptrs.get(e.pointerId);
+                if (ptrs.size === 1) {
+                    yaw -= (e.clientX - prev.x) * .006;
+                    pitch = Math.max(-.1, Math.min(1.3, pitch + (e.clientY - prev.y) * .005));
+                } else if (ptrs.size === 2) {
+                    var arr = Array.from(ptrs.values()), before = Math.hypot(arr[0].x - arr[1].x, arr[0].y - arr[1].y);
+                    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+                    var arr2 = Array.from(ptrs.values()), after = Math.hypot(arr2[0].x - arr2[1].x, arr2[0].y - arr2[1].y);
+                    if (after > 0) zoom = Math.max(.35, Math.min(2.2, zoom * before / after));
+                }
+                ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); lastTouch = performance.now();
+            });
+            function up(e) { ptrs.delete(e.pointerId); lastTouch = performance.now(); }
+            canvas.addEventListener("pointerup", up); canvas.addEventListener("pointercancel", up);
+            canvas.addEventListener("wheel", function (e) {
+                e.preventDefault();
+                zoom = Math.max(.35, Math.min(2.2, zoom * Math.exp(e.deltaY * .0012))); lastTouch = performance.now();
+            }, { passive: false });
+
+            /* ---------- bucle ---------- */
+            var clock = new THREE.Clock(), speedK = reduce ? .25 : 1;
+            function easeOut(x) { return 1 - Math.pow(1 - x, 3); }
+            function frame() {
+                var dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+                var intro = reduce ? 1 : easeOut(Math.min(t / 3.2, 1));
+
+                sun.rotation.y += dt * .06;
+                var pulse = 1 + Math.sin(t * 1.6) * .03;
+                h1.scale.set(9 * pulse, 9 * pulse, 1); h2.scale.set(20 * pulse, 20 * pulse, 1);
+                stars.rotation.y += dt * .004; pollen.rotation.y -= dt * .012 * speedK; pollen.rotation.x = Math.sin(t * .1) * .1;
+
+                movers.forEach(function (m) {
+                    m.pivot.rotation.y += dt * m.sp * speedK;
+                    m.holder.position.y = Math.sin(t * .9 + m.bob) * .25 * speedK;
+                    m.bq.rotation.y += dt * m.spin * speedK;
+                    var sc = Math.max(.001, Math.min(1, intro * 1.4 - (m.bob % 3) * .12)); m.bq.scale.setScalar(sc);
+                });
+
+                loveGroup.rotation.y += dt * .03 * speedK;
+                loveSprites.forEach(function (s) {
+                    s.position.y = s.userData.y + Math.sin(t * .6 + s.userData.ph) * .4 * speedK;
+                    s.material.opacity = Math.max(0, Math.min(.96, (t - s.userData.born) * .7));
+                });
+
+                if (!reduce && ptrs.size === 0 && performance.now() - lastTouch > 2500) yaw += dt * .05;
+
+                var d = baseDist * zoom * (1 + (1 - intro) * .8);
+                camera.position.set(d * Math.cos(pitch) * Math.sin(yaw), d * Math.sin(pitch), d * Math.cos(pitch) * Math.cos(yaw));
+                camera.lookAt(0, 0, 0);
+                renderer.render(scene, camera);
+                requestAnimationFrame(frame);
+            }
+            frame();
+
+            /* ---------- Reproductor de música (YouTube IFrame API) ---------- */
+            /*
+             *  CÓMO CAMBIAR LA CANCIÓN:
+             *  1. Busca tu canción en YouTube.
+             *  2. Copia el ID del video (la parte después de "v=" en la URL).
+             *     Ejemplo: https://www.youtube.com/watch?v=dQw4w9WgXcQ  →  ID = "dQw4w9WgXcQ"
+             *  3. Reemplaza el valor de YOUTUBE_VIDEO_ID abajo.
+             */
+            var YOUTUBE_VIDEO_ID = "2Vv-BfVoq4g";  // ← Cambia este ID por el de tu canción
+
+            var musicBtn = document.getElementById("musicBtn");
+            var ytPlayer = null;
+            var musicPlaying = false;
+            var playerReady = false;
+
+            // La API de YouTube llama a onYouTubeIframeAPIReady cuando está lista
+            window._createYTPlayer = function () {
+                createPlayer();
+            };
+
+            function createPlayer() {
+                if (ytPlayer) return;
+                try {
+                    ytPlayer = new YT.Player("ytPlayer", {
+                        height: "1",
+                        width: "1",
+                        videoId: YOUTUBE_VIDEO_ID,
+                        playerVars: {
+                            autoplay: 0,
+                            controls: 0,
+                            disablekb: 1,
+                            fs: 0,
+                            loop: 1,
+                            playlist: YOUTUBE_VIDEO_ID,
+                            modestbranding: 1,
+                            rel: 0,
+                            showinfo: 0,
+                            iv_load_policy: 3,
+                            origin: location.origin
+                        },
+                        events: {
+                            onReady: function () {
+                                playerReady = true;
+                                ytPlayer.setVolume(60);
+                            },
+                            onError: function (e) {
+                                console.warn("YouTube player error:", e.data);
+                                // Error 150 = embed bloqueado por el dueño del video
+                                if (e.data === 150 || e.data === 101) {
+                                    musicBtn.title = "Esta canción no permite embed. Cambia el YOUTUBE_VIDEO_ID.";
+                                    musicBtn.style.opacity = "0.4";
+                                }
+                            }
+                        }
+                    });
+                } catch (err) {
+                    console.warn("No se pudo crear el player de YouTube:", err);
+                }
+            }
+
+            // Intentar crear el player si la API ya cargó
+            if (window.YT && window.YT.Player) {
+                createPlayer();
+            }
+            // Si no, onYouTubeIframeAPIReady lo hará (ver abajo)
+
+            function toggleMusic() {
+                if (!playerReady || !ytPlayer) {
+                    // Si el player aún no está listo, intentar crearlo
+                    if (window.YT && window.YT.Player && !ytPlayer) createPlayer();
+                    return;
+                }
+                if (musicPlaying) {
+                    ytPlayer.pauseVideo();
+                    musicPlaying = false;
+                    musicBtn.classList.remove("playing");
+                    musicBtn.setAttribute("aria-label", "Reproducir música");
+                    musicBtn.setAttribute("title", "Reproducir música");
+                } else {
+                    ytPlayer.playVideo();
+                    musicPlaying = true;
+                    musicBtn.classList.add("playing");
+                    musicBtn.setAttribute("aria-label", "Pausar música");
+                    musicBtn.setAttribute("title", "Pausar música");
+                }
+            }
+
+            musicBtn.addEventListener("click", toggleMusic);
+
+        })();
+
+        /* Callback global que YouTube IFrame API espera */
+        function onYouTubeIframeAPIReady() {
+            if (window._createYTPlayer) window._createYTPlayer();
+        }
+    </script>
+</body>
+
+</html>
